@@ -1,69 +1,57 @@
 import User from "../models/user.model.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import bcrypt from 'bcryptjs'
-import jwt from "jsonwebtoken";
-import dotenv from 'dotenv'
-
-dotenv.config('../.env')
 
 
 
+export const getAllUser = asyncHandler(async (req, res) => {
 
+    const allUser = await User.find({}).sort({ _id: -1 });
 
-
-export const registerUser = asyncHandler(async (req, res) => {
-
-
-    const { name, email, password, hobby, discription } = req.body;
-
-
-    if ([name, email, password, hobby, discription].some((item) => item?.trim() === "")) {
-
-        return res.status(400).json({
-            success: false,
-            massage: "All the fields required !"
-        })
-    }
-
-    const checkUser = await User.findOne({
-
-        $or: [{ name }, { email }]
+    return res.json({
+        success: true,
+        massage: "here are all users",
+        data: allUser
     })
 
+})
 
 
-    if (checkUser) {
-        return res.status(400).json({
+export const sendRequest = asyncHandler(async (req, res) => {
+
+    const { activeUserId, toUserId } = req.params;
+
+    const activeUser = await User.findById(activeUserId);
+    const toUser = await User.findById(toUserId);
+
+    if (!(activeUser || toUser)) {
+        return res.json({
             success: false,
-            massage: "User already exists !"
+            massage: "one of both user does not exist"
         })
     }
 
-    const hashPassword = await bcrypt.hash(password, 12);
 
-    const newUser = await User.create({
-        name,
-        email,
-        password: hashPassword
-    })
-
-    const createdUser = await User.findById(newUser._id).select(
-        "-password -email"
-    )
-
-    if (!createdUser) {
-        return res.status(400).json({
+    if (toUser.request.includes(activeUserId)) {
+        return res.json({
             success: false,
-            massage: "Error occured while registering user !"
+            massage: "Request already sent to the user"
         })
-
     }
 
+    if (toUser.friends.includes(activeUserId)) {
+        return res.json({
+            success: false,
+            massage: "You both are already friends"
+        })
+    }
+
+
+    toUser.request.push(activeUserId);
+    await toUser.save();
 
     return res.status(200).json({
         success: true,
-        massage: "User Registered successfully",
-        createdUser
+        massage: "Request sent successfully"
     })
 
 
@@ -71,88 +59,68 @@ export const registerUser = asyncHandler(async (req, res) => {
 
 
 
+export const requestResponse = asyncHandler(async (req, res) => {
 
+    const { activeUserId, toUserId, ans } = req.body;
 
-export const loginUser = asyncHandler(async (req, res) => {
-
-    const { name, email, password } = req.body;
-
-    if (!(name || email)) {
+    if (!(activeUserId, toUserId, ans)) {
         return res.json({
             success: false,
-            massage: "name or email required !"
+            massage: "One of the field is missing"
+        })
+    }
+
+    const activeUser = await User.findById(activeUserId);
+    const toUser = await User.findById(toUserId);
+
+    if (!(activeUser || toUserId)) {
+        return res.json({
+            success: false,
+            massage: "one of the user does not exist anymore"
+        })
+    }
+
+    if (!activeUser.request.includes(toUserId)) {
+        return res.json({
+            success: false,
+            massage: "request does not exists"
         })
     }
 
 
-    const checkUser = await User.findOne({
-        $or: [{ name }, { email }]
-    })
+    activeUser.request = activeUser.request.filter((item) => item.toString() !== toUserId);
 
-    if (!checkUser) {
-        return res.json({
-            success: false,
-            massage: "User does not exists !"
-        })
-    }
+    if (ans === true) {
 
-
-    const checkPassword = await bcrypt.compare(password, checkUser.password);
-
-    if (!checkPassword) {
-        return res.json({
-            success: false,
-            massage: "Incorrect Password !"
-        })
-
-    }
-
-    const token =  jwt.sign(
-        {
-            id: checkUser._id,
-            email: checkUser.email,
-            name: checkUser.name
-        },
-        process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }  
-    );
-    
-
-    return res.status(200)
-        .cookie("token", token, { httpOnly: true, secure: true })
-        .json({
-            success: true,
-            message: "Logged in successfully",
-            user: {
-                name: checkUser.name,
-                email: checkUser.email,
-                id: checkUser._id,
-            },
-        });
+        activeUser.friends.push(toUserId);
+        await activeUser.save()
         
+        toUser.friends.push(activeUserId);
+        await toUser.save()
+        
+        return res.status(200).json({
+            success: true,
+            massage: "Friend Request Accepted"
+        })
+        
+    }
 
+    else{
+        await activeUser.save()
+
+        return res.status(200).json({
+            success: true,
+            massage: "Friend Request declined"
+        })
+
+    }
 
 
 })
 
 
-export const logoutUser = asyncHandler( async(req , res)=>{
-
-    res.clearCookie("token").json({
-        success : true ,
-        massage : "User successfully logout !"
-    });
-
-});
+// export const deleteFriend = asyncHandler(async (req , res) =>{
 
 
 
-// export const checkAuth = asyncHandler( async(req , res) =>{
-
-    
 // })
-
-
-
-
-

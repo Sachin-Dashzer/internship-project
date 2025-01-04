@@ -2,37 +2,37 @@ import mongoose from "mongoose";
 
 
 const user = mongoose.Schema({
-    name : {
-        type : String,
-        required : true
+    name: {
+        type: String,
+        required: true
     },
     avatar: {
-        type : String,
-        default : "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        type: String,
+        default: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
     },
-    email : {
-        type : String,
-        required : true
+    email: {
+        type: String,
+        required: true
     },
-    password : {
-        type : String,
-        required : true
+    password: {
+        type: String,
+        required: true
     },
-    friends : {
-        type : Array,
-        default : []
+    friends: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }],
+    request: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }],
+    hobby: {
+        type: Array,
+        default: []
     },
-    request : {
-        type : Array,
-        default : []
-    },
-    hobby : {
-        type : Array,
-        default : []
-    },
-    date : {
-        type : Date,
-        default : Date.now
+    date: {
+        type: Date,
+        default: Date.now
     }
 
 })
