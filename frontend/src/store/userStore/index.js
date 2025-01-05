@@ -8,8 +8,8 @@ const initialState = {
 }
 
 
-// const baseUrl = "https://internship-project-phwe.onrender.com/api/user";
-const baseUrl = "http://localhost:5000/api/user";
+const baseUrl = "https://internship-project-phwe.onrender.com/api/user";
+// const baseUrl = "http://localhost:5000/api/user";
 
 
 const getUser = createAsyncThunk("/getuser", async () => {

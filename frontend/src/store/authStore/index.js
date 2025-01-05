@@ -7,7 +7,7 @@ const initialState = {
     isAuthenticated: true,
 };
 
-const baseUrl = "http://localhost:5000/api";
+const baseUrl = "https://internship-project-phwe.onrender.com/api";
 
 
 const loginUser = createAsyncThunk("/auth/login", async (formData) => {
