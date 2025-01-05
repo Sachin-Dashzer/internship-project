@@ -13,7 +13,7 @@ const initialState = {
 }
 
 
-const baseUrl = "http://localhost:5000/api/auth";
+const baseUrl = "https://internship-project-ashy.vercel.app/api/auth";
 
 
 
