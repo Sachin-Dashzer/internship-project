@@ -13,7 +13,7 @@ const initialState = {
 }
 
 
-const baseUrl = "https://internship-project-ashy.vercel.app/api/auth";
+const baseUrl = "https://internship-project-phwe.onrender.com/api/auth";
 
 
 

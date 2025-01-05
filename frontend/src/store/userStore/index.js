@@ -8,7 +8,7 @@ const initialState = {
 }
 
 
-const baseUrl = "https://internship-project-ashy.vercel.app/api/user";
+const baseUrl = "https://internship-project-phwe.onrender.com/api/user";
 
 
 const getUser = createAsyncThunk("/getuser", async () => {
