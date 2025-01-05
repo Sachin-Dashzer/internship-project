@@ -7,7 +7,7 @@ export const getAllUser = asyncHandler(async (req, res) => {
 
     const allUser = await User.find({}).sort({ _id: -1 });
 
-    return res.json({
+    return res.send     ({
         success: true,
         massage: "here are all users",
         data: allUser
@@ -24,7 +24,7 @@ export const sendRequest = asyncHandler(async (req, res) => {
     const toUser = await User.findById(toUserId);
 
     if (!(activeUser || toUser)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "one of both user does not exist"
         })
@@ -32,14 +32,14 @@ export const sendRequest = asyncHandler(async (req, res) => {
 
 
     if (toUser.request.includes(activeUserId)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "Request already sent to the user"
         })
     }
 
     if (toUser.friends.includes(activeUserId)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "You both are already friends"
         })
@@ -64,7 +64,7 @@ export const requestResponse = asyncHandler(async (req, res) => {
     const { activeUserId, toUserId, ans } = req.body;
 
     if (!(activeUserId, toUserId, ans)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "One of the field is missing"
         })
@@ -74,14 +74,14 @@ export const requestResponse = asyncHandler(async (req, res) => {
     const toUser = await User.findById(toUserId);
 
     if (!(activeUser || toUserId)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "one of the user does not exist anymore"
         })
     }
 
     if (!activeUser.request.includes(toUserId)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "request does not exists"
         })
@@ -127,7 +127,7 @@ export const deleteFriend = asyncHandler(async (req, res) => {
     const toUser = await User.findById(toUserId)
 
     if (!(activeUser || toUser)) {
-        return res.json({
+        return res.send     ({
             success: false,
             massage: "one of both user does not exist"
         })
@@ -152,19 +152,19 @@ export const deleteFriend = asyncHandler(async (req, res) => {
 
 export const allFriends = asyncHandler(async (req , res)=>{
 
-    const {activeUserId} = req.body();
+    const {activeUserId} = req.body;
     const activeUser = await User.findById(activeUserId).populate("friends", "name email avatar");
 
 
     if(!activeUser){
-        return res.json({
+        return res.send({
             success : false,
             massage : "User does not exists"
         })
     }
 
 
-    return res.status(200).json({
+    return res.send({
         success : true,
         friends : activeUser.friends
     })
@@ -182,7 +182,7 @@ export const allRequest = asyncHandler(async (req , res)=>{
 
 
     if(!activeUser){
-        return res.json({
+        return res.send     ({
             success : false,
             massage : "User does not exists"
         })

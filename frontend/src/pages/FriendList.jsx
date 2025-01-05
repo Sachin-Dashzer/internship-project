@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { getUser } from "../store/userStore/index.js";
+import { useDispatch, useSelector } from "react-redux";
+import { getFriends } from "../store/userStore/index.js";
 
 const App = () => {
     const [users, setUsers] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const dispatch = useDispatch();
 
+    const { user } = useSelector((state) => state.auth)
+
+
     const getdata = async () => {
         try {
-            const response = await dispatch(getUser());
-            const fetchedData = response.payload.data;
-            setUsers(fetchedData);
+          console.log(user?.id)
+            const response = await dispatch(getFriends(user?.id));
+
+            console.log(response)
+
+            // const fetchedData = response.payload.data;
+            // setUsers(fetchedData);
         } catch (error) {
             console.error("Failed to fetch users:", error);
         }

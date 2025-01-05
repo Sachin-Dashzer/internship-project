@@ -1,27 +1,26 @@
 import { Navigate, useLocation } from "react-router-dom";
 
-function CheckAuth({ isAuthenticated, user, children }) {
-    const location = useLocation();
+function CheckAuth({ isAuthenticated, children }) {
+  const location = useLocation();
 
-    if (
-        !isAuthenticated &&
-        !(
-            location.pathname.includes("/login")
-        )
-    ) {
-        return <Navigate to="/login" />;
-    }
-
-    if (
-        isAuthenticated &&
-        location.pathname.includes("/login")
-    ) {
-        return <Navigate to="/user" />;
-
-    }
+  if (
+    !isAuthenticated &&
+    !(location.pathname.includes("/login") || location.pathname.includes("/register"))
+  ) {
+    return <Navigate to="/login" />;
+  }
 
 
-    return <>{children}</>;
+
+
+  if (
+    isAuthenticated &&
+    (location.pathname.includes("/login") || location.pathname.includes("/register"))
+  ) {
+    return <Navigate to="/" />;
+  }
+
+  return <>{children}</>;
 }
 
 export default CheckAuth;

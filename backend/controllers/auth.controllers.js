@@ -14,14 +14,14 @@ export const registerUser = asyncHandler(async (req, res) => {
     const { name, email, password, hobby } = req.body;
 
     if (!name?.trim() || !email?.trim() || !password?.trim()) {
-        return res.status(400).json({
+        return res.send({
             success: false,
             message: "Name, email, and password are required!",
         });
     }
 
     if (!Array.isArray(hobby) || hobby.length === 0) {
-        return res.status(400).json({
+        return res.send({
             success: false,
             message: "Hobby must be a non-empty array!",
         });
@@ -32,7 +32,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
 
     if (checkUser) {
-        return res.status(400).json({
+        return res.send({
             success: false,
             message: "User already exists!",
         });
@@ -50,13 +50,13 @@ export const registerUser = asyncHandler(async (req, res) => {
     const createdUser = await User.findById(newUser._id).select("-password -email");
 
     if (!createdUser) {
-        return res.status(400).json({
+        return res.send({
             success: false,
             message: "Error occurred while registering the user!",
         });
     }
 
-    return res.status(200).json({
+    return res.send({
         success: true,
         message: "User registered successfully!",
         createdUser,
@@ -68,63 +68,57 @@ export const registerUser = asyncHandler(async (req, res) => {
 
 
 export const loginUser = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
 
-    const { name, email, password } = req.body;
-
-    if (!(name || email)) {
-        return res.json({
+    if (!email && !password) {
+        res.send({
             success: false,
-            massage: "name or email required !"
-        });
-    };
+            massage: "Email Id is required !"
+        })
+    }
 
+    const user = await User.findOne({ email });
 
-    const checkUser = await User.findOne({
-        $or: [{ name }, { email }]
-    });
-
-
-    if (!checkUser) {
-        return res.json({
+    if (!user) {
+        res.send({
             success: false,
-            massage: "User does not exists !"
-        });
-    };
+            massage: "User does not exist. Recheck email !"
+        })
+    }
 
+    const isPasswordCorrect = await bcrypt.compare(
+        password,
+        user.password
+    );
 
-    const checkPassword = await bcrypt.compare(password, checkUser.password);
-
-    if (!checkPassword) {
-        return res.json({
+    if (!isPasswordCorrect) {
+        res.send({
             success: false,
-            massage: "Incorrect Password !"
-        });
-    };
+            massage: "Invalid user credentials"
+        })
+    }
 
     const token = jwt.sign(
         {
-            id: checkUser._id,
-            email: checkUser.email,
-            name: checkUser.name
+            id: user._id,
+            email: user.email,
+            name: user.name,
         },
         process.env.ACCESS_TOKEN_SECRET,
-        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+        { expiresIn: "60m" }
     );
 
+    res.cookie("token", token, { httpOnly: true, secure: false }).json({
+        success: true,
+        massage: "Logged in successfully !",
+        user: {
+            email: user.email,
+            id: user._id,
+            name: user.name,
+        },
+    });
 
-    return res.status(200)
-        .cookie("token", token, { httpOnly: true, secure: true })
-        .json({
-            success: true,
-            message: "Logged in successfully",
-            user: {
-                name: checkUser.name,
-                email: checkUser.email,
-                id: checkUser._id,
-            },
-        });
 });
-
 
 
 
@@ -142,32 +136,26 @@ export const logoutUser = asyncHandler(async (req, res) => {
 
 
 
-export const checkAuth = asyncHandler(async (req, res, next) => {
-
-    const token = req.cookies.token;
-
+export const authMiddleware = async (req, res, next) => {
+    const token = req.cookies?.token;
     if (!token) {
-        return res.json({
+        return res.send({
             success: false,
-            massage: "Unauthorized User !"
+            massage: "Unauthorized user!",
         });
-    };
-
+    }
 
     try {
         const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         req.user = decoded;
         next();
-    }
-    catch (error) {
-
-        return res.status(401).json({
+    } catch (error) {
+        res.status(401).json({
             success: false,
-            massage: "Unauthorized User !"
+            massage: "Unauthorized user!",
         });
-    };
-});
-
+    }
+};
 
 
 

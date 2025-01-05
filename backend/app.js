@@ -10,15 +10,15 @@ const app = express();
 dotenv.config('.env')
 
 app.use(cors({
-    origin : "https://friendly-gamma.vercel.app",
+    origin : process.env.CORS_ORIGIN,
     credentials : true,
     methods : ["GET", "POST" , "PUT" , "DELETE"]
 }))
 
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true , limit : '20kb' }))
 app.use(express.json({limit : '20kb'}))
 app.use(express.static('public'));
-app.use(cookieParser());
 
 
 
