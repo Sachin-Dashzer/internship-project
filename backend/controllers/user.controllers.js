@@ -94,18 +94,18 @@ export const requestResponse = asyncHandler(async (req, res) => {
 
         activeUser.friends.push(toUserId);
         await activeUser.save()
-        
+
         toUser.friends.push(activeUserId);
         await toUser.save()
-        
+
         return res.status(200).json({
             success: true,
             massage: "Friend Request Accepted"
         })
-        
+
     }
 
-    else{
+    else {
         await activeUser.save()
 
         return res.status(200).json({
@@ -119,8 +119,91 @@ export const requestResponse = asyncHandler(async (req, res) => {
 })
 
 
-// export const deleteFriend = asyncHandler(async (req , res) =>{
+export const deleteFriend = asyncHandler(async (req, res) => {
+
+    const { activeUserId, toUserId } = req.body;
+
+    const activeUser = await User.findById(activeUserId)
+    const toUser = await User.findById(toUserId)
+
+    if (!(activeUser || toUser)) {
+        return res.json({
+            success: false,
+            massage: "one of both user does not exist"
+        })
+    }
+
+
+    activeUser.friends = activeUser.friends.filter((item) => item.toString !== toUserId)
+    await activeUser.save();
+
+
+    toUser.friends = activeUser.friends.filter((item) => item.toString !== activeUserId)
+    await toUser.save()
+
+
+    return res.status(200).json({
+        success : true,
+        massage : "Friend removed Sucessfully"
+    })
+
+})
+
+
+export const allFriends = asyncHandler(async (req , res)=>{
+
+    const {activeUserId} = req.body();
+    const activeUser = await User.findById(activeUserId).populate("friends", "name email avatar");
+
+
+    if(!activeUser){
+        return res.json({
+            success : false,
+            massage : "User does not exists"
+        })
+    }
+
+
+    return res.status(200).json({
+        success : true,
+        friends : activeUser.friends
+    })
+
+
+})
 
 
 
-// })
+export const allRequest = asyncHandler(async (req , res)=>{
+
+
+    const {activeUserId} = req.body();
+    const activeUser = await User.findById(activeUserId).populate("request", "name email avatar");
+
+
+    if(!activeUser){
+        return res.json({
+            success : false,
+            massage : "User does not exists"
+        })
+    }
+
+
+    return res.status(200).json({
+        success : true,
+        friends : activeUser.request
+    })
+
+
+})
+
+
+
+
+
+
+
+
+
+
+

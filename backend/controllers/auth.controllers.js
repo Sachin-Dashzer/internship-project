@@ -10,60 +10,57 @@ dotenv.config('../.env')
 
 
 
-
 export const registerUser = asyncHandler(async (req, res) => {
+    const { name, email, password, hobby } = req.body;
 
-
-    const { name, email, password, hobby, discription } = req.body;
-
-
-    if ([name, email, password, hobby, discription].some((item) => item?.trim() === "")) {
-
+    if (!name?.trim() || !email?.trim() || !password?.trim()) {
         return res.status(400).json({
             success: false,
-            massage: "All the fields required !"
+            message: "Name, email, and password are required!",
         });
-    };
+    }
+
+    if (!Array.isArray(hobby) || hobby.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: "Hobby must be a non-empty array!",
+        });
+    }
 
     const checkUser = await User.findOne({
-        $or: [{ name }, { email }]
+        $or: [{ name }, { email }],
     });
-
-
 
     if (checkUser) {
         return res.status(400).json({
             success: false,
-            massage: "User already exists !"
+            message: "User already exists!",
         });
-    };
+    }
 
     const hashPassword = await bcrypt.hash(password, 12);
 
     const newUser = await User.create({
         name,
         email,
-        password: hashPassword
-    })
+        password: hashPassword,
+        hobby,
+    });
 
-    const createdUser = await User.findById(newUser._id).select(
-        "-password -email"
-    );
+    const createdUser = await User.findById(newUser._id).select("-password -email");
 
     if (!createdUser) {
         return res.status(400).json({
             success: false,
-            massage: "Error occured while registering user !"
+            message: "Error occurred while registering the user!",
         });
-    };
-
+    }
 
     return res.status(200).json({
         success: true,
-        massage: "User Registered successfully",
-        createdUser
+        message: "User registered successfully!",
+        createdUser,
     });
-
 });
 
 
@@ -175,3 +172,83 @@ export const checkAuth = asyncHandler(async (req, res, next) => {
 
 
 
+
+
+
+
+// export const registerMultipleUsers = asyncHandler(async (req, res) => {
+//     const users = req.body;
+
+//     //     if (!Array.isArray(users) || users.length === 0) {
+//         return res.status(400).json({
+//             success: false,
+//             message: "Request body must be a non-empty array of users!"
+//         });
+//     }
+
+
+
+//     const responses = await Promise.all(
+//         users.map(async (user) => {
+//             const { name, email, password, hobby = [], description } = user;
+
+//             //             if (
+//                 !name?.trim() ||
+//                 !password?.trim() ||
+//                 !Array.isArray(hobby) ||
+//                 !description?.trim()
+//             ) {
+//                 return {
+//                     success: false,
+//                     message: "All fields are required for each user, and email must be valid!",
+//                     user: { name, email }
+//                 };
+//             }
+
+//             try {
+//                 //                 const existingUser = await User.findOne({
+//                     $or: [{ name }, { email }]
+//                 });
+
+//                 if (existingUser) {
+//                     return {
+//                         success: false,
+//                         message: `User with name "${name}" or email "${email}" already exists!`,
+//                         user: { name, email }
+//                     };
+//                 }
+
+//                 //                 const hashedPassword = await bcrypt.hash(password, 12);
+
+//                 //                 const newUser = await User.create({
+//                     name,
+//                     email,
+//                     password: hashedPassword,
+//                     hobby,
+//                     description
+//                 });
+
+//                 //                 const createdUser = await User.findById(newUser._id).select("-password");
+
+//                 return {
+//                     success: true,
+//                     message: "User registered successfully!",
+//                     createdUser
+//                 };
+//             } catch (error) {
+//                 return {
+//                     success: false,
+//                     message: "Error occurred while registering user!",
+//                     error: error.message,
+//                     user: { name, email }
+//                 };
+//             }
+//         })
+//     );
+
+//     return res.status(200).json({
+//         success: true,
+//         message: "User registration completed with responses for each user.",
+//         responses
+//     });
+// });
