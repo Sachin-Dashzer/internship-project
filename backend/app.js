@@ -10,7 +10,7 @@ const app = express();
 dotenv.config('.env')
 
 app.use(cors({
-    origin : https://friendly-gamma.vercel.app,
+    origin : "https://friendly-gamma.vercel.app",
     credentials : true,
     methods : ["GET", "POST" , "PUT" , "DELETE"]
 }))
